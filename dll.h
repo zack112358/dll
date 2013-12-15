@@ -125,7 +125,9 @@ void dll_push_tail(ptrdiff_t offset, dll_root_t *list_p, dll_data_t *elt_p);
  * @brief Pop an element off the head of the linked list given and return it.
  * @param offset See note at top of file.
  * @param list_p A pointer to the list to pop.
- * @return Pointer to the popped element, or null if list was empty.
+ * @return Pointer to the popped element, or null if list was empty. The latter
+ * behavior is intended to facilitate a pattern of 
+ * "while (item_p = * dll_pop_head(...)) {...}"
  */
 dll_data_t *dll_pop_head(ptrdiff_t offset, dll_root_t *list_p);
 

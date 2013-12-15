@@ -145,10 +145,10 @@ void dll_ins_after(ptrdiff_t offset, dll_data_t *insert_after_me_p, dll_data_t *
 }
 
 void dll_ins_before(ptrdiff_t offset, dll_root_t *head_link_pp,
-                  dll_data_t *insert_before_me_p, dll_data_t *new_elt_p)
+                    dll_data_t *insert_before_me_p, dll_data_t *new_elt_p)
 {
     // If we're inserting before the head
-    if (head_link_pp && (*head_link_pp == insert_before_me_p)) {
+    if (head_link_pp && (*head_link_pp == LFD(insert_before_me_p))) {
         dll_push_head(offset, head_link_pp, new_elt_p);
     } else {
         dll_link_t *link_p = LFD(insert_before_me_p);
