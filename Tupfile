@@ -1,0 +1,3 @@
+CC = gcc
+CFLAGS = -Wall -Werror -O3
+: foreach *.c |> $(CC) $(CFLAGS) -c %f -o %o |> %B.o
