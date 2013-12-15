@@ -18,9 +18,9 @@
  * @param link_p Pointer to link element
  * @return Pointer to data element in which link element resides
 **/
-static inline dll_data_t *data_from_link(void *offset, dll_link_t *link_p)
+static inline dll_data_t *data_from_link(ptrdiff_t offset, dll_link_t *link_p)
 {
-    return (dll_data_t *) (((char*) link_p) - ((ptrdiff_t) offset));
+    return (dll_data_t *) (((char*) link_p) - offset);
 }
 
 /**
@@ -31,9 +31,9 @@ static inline dll_data_t *data_from_link(void *offset, dll_link_t *link_p)
  * @param data_p Pointer to data element
  * @return Pointer to link element residing in data element
 **/
-static inline dll_link_t *link_from_data(void *offset, dll_data_t *data_p)
+static inline dll_link_t *link_from_data(ptrdiff_t offset, dll_data_t *data_p)
 {
-    return (dll_link_t *) (((char*) data_p) + ((ptrdiff_t) offset));
+    return (dll_link_t *) (((char*) data_p) + offset);
 }
 
 /** A macro that calls data_from_link with the identifier 'offset' as the first
@@ -56,13 +56,13 @@ void dll_init_link(dll_link_t *link_p)
     link_p->prev_p = (void*) 0xdeadbeef;
 }
 
-void dll_push_head(void* offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
+void dll_push_head(ptrdiff_t offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
 {
     dll_push_tail(offset, head_link_pp, elt_p);
     *head_link_pp = LFD(elt_p);
 }
 
-void dll_push_tail(void* offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
+void dll_push_tail(ptrdiff_t offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
 {
     dll_link_t *new_link_p = LFD(elt_p);
     // If the list is nonempty
@@ -81,7 +81,7 @@ void dll_push_tail(void* offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
     }
 }
 
-dll_data_t *dll_pop_head(void *offset, dll_root_t *head_link_pp)
+dll_data_t *dll_pop_head(ptrdiff_t offset, dll_root_t *head_link_pp)
 {
     // Can't pop an empty list
     if (!*head_link_pp) {
@@ -106,12 +106,12 @@ dll_data_t *dll_pop_head(void *offset, dll_root_t *head_link_pp)
     return DFL(pop_link_p);
 }
 
-dll_data_t *dll_pop_tail(void *offset, dll_root_t *head_link_pp)
+dll_data_t *dll_pop_tail(ptrdiff_t offset, dll_root_t *head_link_pp)
 {
     return dll_remove(offset, head_link_pp, dll_tail(offset, head_link_pp));
 }
 
-dll_data_t *dll_head(void *offset, dll_root_t *head_link_pp)
+dll_data_t *dll_head(ptrdiff_t offset, dll_root_t *head_link_pp)
 {
     if (*head_link_pp) {
         return DFL(*head_link_pp);
@@ -120,7 +120,7 @@ dll_data_t *dll_head(void *offset, dll_root_t *head_link_pp)
     }
 }
 
-dll_data_t *dll_tail(void *offset, dll_root_t *head_link_pp)
+dll_data_t *dll_tail(ptrdiff_t offset, dll_root_t *head_link_pp)
 {
     if (*head_link_pp) {
         return DFL((*head_link_pp)->prev_p);
@@ -129,22 +129,22 @@ dll_data_t *dll_tail(void *offset, dll_root_t *head_link_pp)
     }
 }
 
-dll_data_t *dll_next(void *offset, dll_data_t *elt_p)
+dll_data_t *dll_next(ptrdiff_t offset, dll_data_t *elt_p)
 {
     return DFL(LFD(elt_p)->next_p);
 }
 
-dll_data_t *dll_prev(void *offset, dll_data_t *elt_p)
+dll_data_t *dll_prev(ptrdiff_t offset, dll_data_t *elt_p)
 {
     return DFL(LFD(elt_p)->prev_p);
 }
 
-void dll_ins_after(void *offset, dll_data_t *insert_after_me_p, dll_data_t *new_elt_p)
+void dll_ins_after(ptrdiff_t offset, dll_data_t *insert_after_me_p, dll_data_t *new_elt_p)
 {
     dll_ins_before(offset, NULL, dll_next(offset, insert_after_me_p), new_elt_p);
 }
 
-void dll_ins_before(void *offset, dll_root_t *head_link_pp,
+void dll_ins_before(ptrdiff_t offset, dll_root_t *head_link_pp,
                   dll_data_t *insert_before_me_p, dll_data_t *new_elt_p)
 {
     // If we're inserting before the head
@@ -156,7 +156,7 @@ void dll_ins_before(void *offset, dll_root_t *head_link_pp,
     }
 }
 
-dll_data_t *dll_remove(void *offset, dll_root_t *head_link_pp,
+dll_data_t *dll_remove(ptrdiff_t offset, dll_root_t *head_link_pp,
                       dll_data_t *remove_me_p)
 {
     if (head_link_pp && (dll_head(offset, head_link_pp) == remove_me_p)) {

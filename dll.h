@@ -28,9 +28,7 @@
  *
  * @note Offsets. Most of the functions in this library take an 'offset'
  *       parameter. This is the offset in bytes from the address of the data
- *       structure where the link field can be found. For convenience, the
- *       offset arguments are defined as void*, but they should be thought of as
- *       ptr_diff_t.<br>
+ *       structure where the link field can be found.<br>
  *<br>
  *       An example might make things clearer:<br>
  *<br>
@@ -55,11 +53,11 @@
  *       alternative is to place the link field at a consistent offset in each
  *       different type or size of object.
  *
- * @warning We have discovered that the offsets-as-void* tends to lead to bugs
- *          where one tries to add byte offsets to pointers without remembering
- *          that the pointers to objects of size other than 1, and loses. Had we
- *          more time we would therefore convert offsets to ptrdiff_t or
- *          similar.
+ * @note The offset arguments used to be of type void*. This turned out to make
+ *       it easy to accidentally write a bug while using the library where the
+ *       pointer was of non-char-size type, and pointer math that multiplied by
+ *       the referent size surprised the programmer. Now they are ptrdiff_t to
+ *       keep us out of trouble.
  *
  * @note I'm sorry the comments are so long. I comment a lot when I'm tired.
  *
@@ -111,7 +109,7 @@ void dll_init_link(dll_link_t *link_p);
  * @param list_p A pointer to the list to push onto.
  * @param elt_p A pointer to the element to push on.
  */
-void dll_push_head(void* offset, dll_root_t *list_p, dll_data_t *elt_p);
+void dll_push_head(ptrdiff_t offset, dll_root_t *list_p, dll_data_t *elt_p);
 
 /**
  * @brief Push an element onto the tail of the linked list given.
@@ -119,7 +117,7 @@ void dll_push_head(void* offset, dll_root_t *list_p, dll_data_t *elt_p);
  * @param list_p A pointer to the list to push onto.
  * @param elt_p A pointer to the element to push on.
  */
-void dll_push_tail(void* offset, dll_root_t *list_p, dll_data_t *elt_p);
+void dll_push_tail(ptrdiff_t offset, dll_root_t *list_p, dll_data_t *elt_p);
 
 /**
  * @brief Pop an element off the head of the linked list given and return it.
@@ -127,7 +125,7 @@ void dll_push_tail(void* offset, dll_root_t *list_p, dll_data_t *elt_p);
  * @param list_p A pointer to the list to pop.
  * @return Pointer to the popped element, or null if list was empty.
  */
-dll_data_t *dll_pop_head(void *offset, dll_root_t *list_p);
+dll_data_t *dll_pop_head(ptrdiff_t offset, dll_root_t *list_p);
 
 /**
  * @brief Pop an element off the tail of the linked list given and return it.
@@ -135,7 +133,7 @@ dll_data_t *dll_pop_head(void *offset, dll_root_t *list_p);
  * @param list_p A pointer to the list to pop.
  * @return Pointer to the popped element, or null if list was empty.
  */
-dll_data_t *dll_pop_tail(void *offset, dll_root_t *list_p);
+dll_data_t *dll_pop_tail(ptrdiff_t offset, dll_root_t *list_p);
 
 /**
  * @brief Return the first element of the given linked list.
@@ -143,7 +141,7 @@ dll_data_t *dll_pop_tail(void *offset, dll_root_t *list_p);
  * @param list_p A pointer to the list to inspect.
  * @return Pointer to the first element, or null if list is empty.
  */
-dll_data_t *dll_head(void *offset, dll_root_t *list_p);
+dll_data_t *dll_head(ptrdiff_t offset, dll_root_t *list_p);
 
 /**
  * @brief Return the last element of the given linked list.
@@ -151,7 +149,7 @@ dll_data_t *dll_head(void *offset, dll_root_t *list_p);
  * @param list_p A pointer to the list to inspect.
  * @return Pointer to the last element, or null if list is empty.
  */
-dll_data_t *dll_tail(void *offset, dll_root_t *list_p);
+dll_data_t *dll_tail(ptrdiff_t offset, dll_root_t *list_p);
 
 /**
  * @brief Get the next element in the list after this one.
@@ -161,7 +159,7 @@ dll_data_t *dll_tail(void *offset, dll_root_t *list_p);
  * @warning In a single element list, the element is its own successor. Thus
  *          this function may return elt_p.
  */
-dll_data_t *dll_next(void *offset, dll_data_t *elt_p);
+dll_data_t *dll_next(ptrdiff_t offset, dll_data_t *elt_p);
 
 /**
  * @brief Get the prev element in the list after this one.
@@ -171,7 +169,7 @@ dll_data_t *dll_next(void *offset, dll_data_t *elt_p);
  * @warning In a single element list, the element is its own predecessor. Thus
  *          this function may return elt_p.
  */
-dll_data_t *dll_prev(void *offset, dll_data_t *elt_p);
+dll_data_t *dll_prev(ptrdiff_t offset, dll_data_t *elt_p);
 
 /**
  * @brief Insert another element after this one. Automatically updates tail to
@@ -180,7 +178,7 @@ dll_data_t *dll_prev(void *offset, dll_data_t *elt_p);
  * @param insert_after_me_p Pointer to the element after which to insert.
  * @param new_elt_p Pointer to the new element to insert.
  */
-void dll_ins_after(void *offset, dll_data_t *insert_after_me_p, dll_data_t *new_elt_p);
+void dll_ins_after(ptrdiff_t offset, dll_data_t *insert_after_me_p, dll_data_t *new_elt_p);
 
 /**
  * @brief Insert another element before this one.
@@ -192,7 +190,7 @@ void dll_ins_after(void *offset, dll_data_t *insert_after_me_p, dll_data_t *new_
  * @param insert_before_me_p Pointer to the element before which to insert.
  * @param new_elt_p Pointer to the new element to insert.
  */
-void dll_ins_before(void *offset, dll_root_t *list_p, dll_data_t *insert_before_me_p,
+void dll_ins_before(ptrdiff_t offset, dll_root_t *list_p, dll_data_t *insert_before_me_p,
                     dll_data_t *new_elt_p);
 
 /**
@@ -208,7 +206,7 @@ void dll_ins_before(void *offset, dll_root_t *list_p, dll_data_t *insert_before_
  * @param remove_me_p Pointer to the element to remove.
  * @return Pointer to the freshly removed element.
  */
-dll_data_t *dll_remove(void *offset, dll_root_t *list_p, dll_data_t *remove_me_p);
+dll_data_t *dll_remove(ptrdiff_t offset, dll_root_t *list_p, dll_data_t *remove_me_p);
 
 /**
  * @brief Checks whether a list is empty.
