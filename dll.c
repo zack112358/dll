@@ -15,12 +15,12 @@
  * Convert a pointer to a link element to a pointer to a data element, using
  * the link element offset
  * @param offset See note in dll.h.
- * @param linkP Pointer to link element
+ * @param link_p Pointer to link element
  * @return Pointer to data element in which link element resides
 **/
-static inline dll_data_t *dataFromLink(void *offset, dll_link_t *linkP)
+static inline dll_data_t *data_from_link(void *offset, dll_link_t *link_p)
 {
-    return (dll_data_t *) (((char*) linkP) - ((ptrdiff_t) offset));
+    return (dll_data_t *) (((char*) link_p) - ((ptrdiff_t) offset));
 }
 
 /**
@@ -28,145 +28,145 @@ static inline dll_data_t *dataFromLink(void *offset, dll_link_t *linkP)
  * Convert a pointer to a data element to a pointer to a link element, using
  * the link element offset
  * @param offset See note in dll.h.
- * @param dataP Pointer to data element
+ * @param data_p Pointer to data element
  * @return Pointer to link element residing in data element
 **/
-static inline dll_link_t *linkFromData(void *offset, dll_data_t *dataP)
+static inline dll_link_t *link_from_data(void *offset, dll_data_t *data_p)
 {
-    return (dll_link_t *) (((char*) dataP) + ((ptrdiff_t) offset));
+    return (dll_link_t *) (((char*) data_p) + ((ptrdiff_t) offset));
 }
 
-/** A macro that calls dataFromLink with the identifier 'offset' as the first
+/** A macro that calls data_from_link with the identifier 'offset' as the first
  * argument. As it turns out, consistent naming makes this a real time saver. */
-#define DFL(linkP) dataFromLink(offset, linkP)
-/** A macro that calls linkFromData with the identifier 'offset' as the first
+#define DFL(link_p) data_from_link(offset, link_p)
+/** A macro that calls link_from_data with the identifier 'offset' as the first
  * argument. As it turns out, consistent naming makes this a real time saver. */
-#define LFD(dataP) linkFromData(offset, dataP)
+#define LFD(data_p) link_from_data(offset, data_p)
 
-void dllInitRoot(dll_root_t *rootPP)
+void dll_init_root(dll_root_t *root_pp)
 {
     // Init to empty
-    *rootPP = NULL;
+    *root_pp = NULL;
 }
 
-void dllInitLink(dll_link_t *linkP)
+void dll_init_link(dll_link_t *link_p)
 {
     // We don't really need to init at all, so let's make it beefy
-    linkP->nextP = (void*) 0xdeadbeef;
-    linkP->prevP = (void*) 0xdeadbeef;
+    link_p->next_p = (void*) 0xdeadbeef;
+    link_p->prev_p = (void*) 0xdeadbeef;
 }
 
-void dllPushHead(void* offset, dll_root_t *headLinkPP, dll_data_t *eltP)
+void dll_push_head(void* offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
 {
-    dllPushTail(offset, headLinkPP, eltP);
-    *headLinkPP = LFD(eltP);
+    dll_push_tail(offset, head_link_pp, elt_p);
+    *head_link_pp = LFD(elt_p);
 }
 
-void dllPushTail(void* offset, dll_root_t *headLinkPP, dll_data_t *eltP)
+void dll_push_tail(void* offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
 {
-    dll_link_t *newLinkP = LFD(eltP);
+    dll_link_t *new_link_p = LFD(elt_p);
     // If the list is nonempty
-    if (*headLinkPP) {
+    if (*head_link_pp) {
         // Find left and right sides of the gap we're sliding into
-        dll_link_t *rightLinkP = *headLinkPP;
-        dll_link_t *leftLinkP = rightLinkP->prevP;
+        dll_link_t *right_link_p = *head_link_pp;
+        dll_link_t *left_link_p = right_link_p->prev_p;
         // Weave new element in
-        newLinkP->nextP = rightLinkP;
-        newLinkP->prevP = leftLinkP;
-        leftLinkP->nextP = newLinkP;
-        rightLinkP->prevP = newLinkP;
+        new_link_p->next_p = right_link_p;
+        new_link_p->prev_p = left_link_p;
+        left_link_p->next_p = new_link_p;
+        right_link_p->prev_p = new_link_p;
     } else {
         // One is all and all is one
-        *headLinkPP = newLinkP->nextP = newLinkP->prevP = newLinkP;
+        *head_link_pp = new_link_p->next_p = new_link_p->prev_p = new_link_p;
     }
 }
 
-dll_data_t *dllPopHead(void *offset, dll_root_t *headLinkPP)
+dll_data_t *dll_pop_head(void *offset, dll_root_t *head_link_pp)
 {
     // Can't pop an empty list
-    if (!*headLinkPP) {
+    if (!*head_link_pp) {
         return NULL;
     }
-    dll_link_t *popLinkP = *headLinkPP;
+    dll_link_t *pop_link_p = *head_link_pp;
     // If this is not the only element
-    if (popLinkP->nextP != popLinkP) {
+    if (pop_link_p->next_p != pop_link_p) {
         // Sew up the hole
-        dll_link_t *rightLinkP = popLinkP->nextP;
-        dll_link_t *leftLinkP = popLinkP->prevP;
-        leftLinkP->nextP = rightLinkP;
-        rightLinkP->prevP = leftLinkP;
+        dll_link_t *right_link_p = pop_link_p->next_p;
+        dll_link_t *left_link_p = pop_link_p->prev_p;
+        left_link_p->next_p = right_link_p;
+        right_link_p->prev_p = left_link_p;
         // Advance head pointer
-        *headLinkPP = rightLinkP;
+        *head_link_pp = right_link_p;
     } else {
         // Null head, as we are emptying list
-        *headLinkPP = NULL;
+        *head_link_pp = NULL;
     }
     // Make sure no one uses the stale links in the popped element
-    dllInitLink(popLinkP);
-    return DFL(popLinkP);
+    dll_init_link(pop_link_p);
+    return DFL(pop_link_p);
 }
 
-dll_data_t *dllPopTail(void *offset, dll_root_t *headLinkPP)
+dll_data_t *dll_pop_tail(void *offset, dll_root_t *head_link_pp)
 {
-    return dllRemove(offset, headLinkPP, dllTail(offset, headLinkPP));
+    return dll_remove(offset, head_link_pp, dll_tail(offset, head_link_pp));
 }
 
-dll_data_t *dllHead(void *offset, dll_root_t *headLinkPP)
+dll_data_t *dll_head(void *offset, dll_root_t *head_link_pp)
 {
-    if (*headLinkPP) {
-        return DFL(*headLinkPP);
+    if (*head_link_pp) {
+        return DFL(*head_link_pp);
     } else {
         return NULL;
     }
 }
 
-dll_data_t *dllTail(void *offset, dll_root_t *headLinkPP)
+dll_data_t *dll_tail(void *offset, dll_root_t *head_link_pp)
 {
-    if (*headLinkPP) {
-        return DFL((*headLinkPP)->prevP);
+    if (*head_link_pp) {
+        return DFL((*head_link_pp)->prev_p);
     } else {
         return NULL;
     }
 }
 
-dll_data_t *dllNext(void *offset, dll_data_t *eltP)
+dll_data_t *dll_next(void *offset, dll_data_t *elt_p)
 {
-    return DFL(LFD(eltP)->nextP);
+    return DFL(LFD(elt_p)->next_p);
 }
 
-dll_data_t *dllPrev(void *offset, dll_data_t *eltP)
+dll_data_t *dll_prev(void *offset, dll_data_t *elt_p)
 {
-    return DFL(LFD(eltP)->prevP);
+    return DFL(LFD(elt_p)->prev_p);
 }
 
-void dllInsAfter(void *offset, dll_data_t *insertAfterMeP, dll_data_t *newEltP)
+void dll_ins_after(void *offset, dll_data_t *insert_after_me_p, dll_data_t *new_elt_p)
 {
-    dllInsBefore(offset, NULL, dllNext(offset, insertAfterMeP), newEltP);
+    dll_ins_before(offset, NULL, dll_next(offset, insert_after_me_p), new_elt_p);
 }
 
-void dllInsBefore(void *offset, dll_root_t *headLinkPP,
-                  dll_data_t *insertBeforeMeP, dll_data_t *newEltP)
+void dll_ins_before(void *offset, dll_root_t *head_link_pp,
+                  dll_data_t *insert_before_me_p, dll_data_t *new_elt_p)
 {
     // If we're inserting before the head
-    if (headLinkPP && (*headLinkPP == insertBeforeMeP)) {
-        dllPushHead(offset, headLinkPP, newEltP);
+    if (head_link_pp && (*head_link_pp == insert_before_me_p)) {
+        dll_push_head(offset, head_link_pp, new_elt_p);
     } else {
-        dll_link_t *linkP = LFD(insertBeforeMeP);
-        dllPushHead(offset, &linkP, newEltP);
+        dll_link_t *link_p = LFD(insert_before_me_p);
+        dll_push_head(offset, &link_p, new_elt_p);
     }
 }
 
-dll_data_t *dllRemove(void *offset, dll_root_t *headLinkPP,
-                      dll_data_t *removeMeP)
+dll_data_t *dll_remove(void *offset, dll_root_t *head_link_pp,
+                      dll_data_t *remove_me_p)
 {
-    if (headLinkPP && (dllHead(offset, headLinkPP) == removeMeP)) {
-        return dllPopHead(offset, headLinkPP);
+    if (head_link_pp && (dll_head(offset, head_link_pp) == remove_me_p)) {
+        return dll_pop_head(offset, head_link_pp);
     } else {
-        dll_link_t *localHeadP = LFD(removeMeP);
-        return dllPopHead(offset, &localHeadP);
+        dll_link_t *local_head_p = LFD(remove_me_p);
+        return dll_pop_head(offset, &local_head_p);
     }
 }
 
-int dllIsEmpty(dll_root_t *headLinkPP) {
-    return !*headLinkPP;
+int dll_is_empty(dll_root_t *head_link_pp) {
+    return !*head_link_pp;
 }
