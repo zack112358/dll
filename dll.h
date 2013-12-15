@@ -65,6 +65,8 @@
 #ifndef DOUBLY_LINKED_LIST_H
 #define DOUBLY_LINKED_LIST_H
 
+#include <stddef.h>
+
 /**
  * @brief The type of a list link. This is the type of the link element that
  *        should be declared inside structs that want to be list members.
