@@ -56,13 +56,17 @@ void dll_init_link(dll_link_t *link_p)
     link_p->prev_p = (void*) 0xdeadbeef;
 }
 
-void dll_push_head(ptrdiff_t offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
+void dll_push_head(ptrdiff_t offset,
+                   dll_root_t *head_link_pp,
+                   dll_data_t *elt_p)
 {
     dll_push_tail(offset, head_link_pp, elt_p);
     *head_link_pp = LFD(elt_p);
 }
 
-void dll_push_tail(ptrdiff_t offset, dll_root_t *head_link_pp, dll_data_t *elt_p)
+void dll_push_tail(ptrdiff_t offset,
+                   dll_root_t *head_link_pp,
+                   dll_data_t *elt_p)
 {
     dll_link_t *new_link_p = LFD(elt_p);
     // If the list is nonempty
@@ -139,16 +143,23 @@ dll_data_t *dll_prev(ptrdiff_t offset, dll_data_t *elt_p)
     return DFL(LFD(elt_p)->prev_p);
 }
 
-void dll_ins_after(ptrdiff_t offset, dll_data_t *insert_after_me_p, dll_data_t *new_elt_p)
+void dll_ins_after(ptrdiff_t offset,
+                   dll_data_t *insert_after_me_p,
+                   dll_data_t *new_elt_p)
 {
-    dll_ins_before(offset, NULL, dll_next(offset, insert_after_me_p), new_elt_p);
+    dll_ins_before(offset,
+                   NULL,
+                   dll_next(offset, insert_after_me_p),
+                   new_elt_p);
 }
 
 void dll_ins_before(ptrdiff_t offset, dll_root_t *head_link_pp,
                     dll_data_t *insert_before_me_p, dll_data_t *new_elt_p)
 {
     // If we're inserting before the head
-    if (head_link_pp && (*head_link_pp == LFD(insert_before_me_p))) {
+    if (head_link_pp &&
+        (dll_head(offset, head_link_pp) == LFD(insert_before_me_p)))
+    {
         dll_push_head(offset, head_link_pp, new_elt_p);
     } else {
         dll_link_t *link_p = LFD(insert_before_me_p);
@@ -157,7 +168,7 @@ void dll_ins_before(ptrdiff_t offset, dll_root_t *head_link_pp,
 }
 
 dll_data_t *dll_remove(ptrdiff_t offset, dll_root_t *head_link_pp,
-                      dll_data_t *remove_me_p)
+                       dll_data_t *remove_me_p)
 {
     if (head_link_pp && (dll_head(offset, head_link_pp) == remove_me_p)) {
         return dll_pop_head(offset, head_link_pp);
